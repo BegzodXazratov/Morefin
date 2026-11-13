@@ -16,6 +16,10 @@ module.exports = async (req, res) => {
   if (b.wantsVideo) lines.push('Videodarslik so\'radi: ha');
   if (b.utm) lines.push('UTM: ' + String(b.utm).slice(0, 200));
   const text = lines.join('\n');
+  // Ixtiyoriy: Geron (yoki boshqa CRM) webhook. Env: GERON_WEBHOOK_URL
+  if (process.env.GERON_WEBHOOK_URL) {
+    try { await fetch(process.env.GERON_WEBHOOK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b) }); } catch (e) { console.log('Geron webhook xato'); }
+  }
   const token = process.env.TELEGRAM_BOT_TOKEN, chat = process.env.TELEGRAM_CHAT_ID;
   if (!token || !chat) { console.log('LEAD (Telegram sozlanmagan):', text); return res.status(200).json({ ok: true, delivered: false }); }
   try {

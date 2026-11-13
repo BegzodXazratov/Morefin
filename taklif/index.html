@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Abdusattor Abdurahimov taklifi: Morefin 7 kun bepul</title>
+<title>Morefin: 7 kun bepul sinab ko'ring</title>
 <meta name="description" content="Biznesingiz moliyasini bitta joyda yuriting. Morefin platformasini 7 kun bepul sinab ko'ring.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="style.css">
 <style>
 .stack{display:flex;flex-direction:column;gap:14px}
+.video.vertical{aspect-ratio:9/16;max-height:560px;margin:0 auto;width:100%;max-width:315px}
 .avatar{width:100%;aspect-ratio:4/5;border-radius:28px;background:linear-gradient(160deg,var(--blue-a),var(--blue-b));display:flex;align-items:flex-end;padding:22px;color:#fff;overflow:hidden;position:relative}
 .avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .avatar span{position:relative;font-size:14px;opacity:.9}
@@ -31,25 +32,38 @@
   <section style="padding:24px 0 56px">
     <div class="grid2" style="align-items:center;gap:40px">
       <div class="stack" style="gap:22px">
-        <div class="eyebrow">Abdusattor Abdurahimovdan taklif</div>
+        <div class="eyebrow">Do'stona taklif</div>
         <h1>Biznesingiz pulini bitta joyda ko'ring</h1>
-        <p class="muted" style="font-size:20px">Men Morefin'ni sinab ko'rdim va sizga ham tavsiya qilaman. Sotuv, chiqim, qarz va jamoa hisobi bitta platformada. 7 kun bepul ishlatib ko'ring.</p>
-        <div style="display:flex;flex-wrap:wrap;gap:12px"><a class="pill dark" href="#form">Bepul sinashni boshlash</a><a class="pill light" href="#video">Videoni ko'rish</a></div>
+        <p class="muted" style="font-size:20px">Morefin'ni sinab ko'rdik va sizga ham tavsiya qilamiz. Sotuv, chiqim, qarz va jamoa hisobi bitta platformada. 7 kun bepul ishlatib ko'ring.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:12px"><a class="pill dark" href="#form">Bepul sinab ko'rish</a><a class="pill light" href="#oldin">Oldin va keyin</a></div>
         <p class="fine">Karta talab qilinmaydi. Telegram yoki Google orqali kirasiz.</p>
       </div>
-      <div class="avatar" aria-label="Abdusattor Abdurahimov">
-        <!-- Rasm qo'yish uchun: <img src="abdusattor.jpg" alt="Abdusattor Abdurahimov"> -->
-        <span>Abdusattor Abdurahimov, 3D modeling mutaxassisi</span>
-      </div>
-    </div>
+      <div class="video vertical" id="videoSlot">Video shu yerga joylanadi</div>
   </section>
 
-  <!-- Video -->
-  <section id="video" style="padding:16px 0 56px">
-    <div class="card stack" style="gap:18px">
-      <h2 style="font-size:40px">Abdusattordan 1 daqiqalik xabar</h2>
-      <div class="video" id="videoSlot">Abdusattorning video taklifi shu yerga joylanadi</div>
-    </div>
+  <!-- Oldin / Keyin -->
+  <section id="oldin" style="padding:16px 0 56px">
+    <h2 style="font-size:44px;margin-bottom:24px">Oldin va keyin</h2>
+<div class="ba" role="group" aria-label="Oldin va keyin taqqoslash">
+  <div class="ba-pane ba-after">
+    <div class="ba-row"><span>Sotuv</span><span>48 200 000</span></div>
+    <div class="ba-row"><span>Chiqim</span><span>31 600 000</span></div>
+    <div class="ba-row"><span>Sof foyda</span><span>16 600 000</span></div>
+    <div class="ba-row"><span>Qarzlar</span><span>muddati bilan</span></div>
+    <div class="ba-row"><span>Sherik ulushi</span><span>avtomatik</span></div>
+    <div style="font-size:12px;opacity:.8">Namuna raqamlar</div>
+  </div>
+  <div class="ba-pane ba-before">
+    <p>Foyda: <s>taxminan?</s> bilmayman</p>
+    <p>Aziz aka: 2 mln qarz... qachon edi?</p>
+    <p>Sherik haqi: kelishmadik</p>
+    <p>Pul qayerga ketdi???</p>
+  </div>
+  <div class="ba-handle"></div>
+  <input type="range" min="0" max="100" value="50" aria-label="Oldin va keyin o'rtasini suring">
+  <span class="ba-tag l">Oldin</span><span class="ba-tag r">Keyin</span>
+</div>
+    <p class="fine" style="margin-top:10px">Chiziqni suring.</p>
   </section>
 
   <!-- Foydalar -->
@@ -110,6 +124,7 @@
 </div>
 
 <script src="config.js"></script>
+<script src="ba.js"></script>
 <script>
 (function(){
 var C = window.MOREFIN_CONFIG || {};
