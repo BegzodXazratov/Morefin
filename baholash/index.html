@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Biznes moliyasi testi | Morefin</title>
+<meta name="description" content="8 ta savol. Biznesingiz moliyaviy nazoratini 1 daqiqada baholang va zaif joylarni ko'ring.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+.opt{display:block;width:100%;text-align:left;background:var(--card-solid);border:1px solid var(--input);border-radius:18px;padding:16px 18px;min-height:56px;font:500 17px/1.4 var(--body);color:var(--fg);cursor:pointer;transition:border-color .15s,background .15s}
+.opt:hover{border-color:var(--ring);background:oklch(97% .02 244)}
+.bar{height:8px;border-radius:999px;background:var(--canvas);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue-a),var(--blue-b));border-radius:999px;transition:width .3s}
+.stack{display:flex;flex-direction:column;gap:12px}
+.gauge{font-family:var(--display);font-size:96px;line-height:1}
+.tag{display:inline-block;border-radius:999px;padding:6px 14px;font-weight:600;font-size:14px}
+.weak{border-left:0;display:flex;gap:16px;align-items:flex-start}
+.weak b{font-size:19px}
+.dot{flex:none;width:12px;height:12px;border-radius:50%;margin-top:9px;background:var(--negative)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><a class="logo" href="#">Morefin</a><span class="fine">Biznes moliyasi testi</span></div>
+
+  <!-- 1. Kirish -->
+  <section id="intro" style="padding:32px 0 64px">
+    <div class="grid2" style="align-items:center;gap:40px">
+      <div class="stack" style="gap:22px">
+        <div class="eyebrow">Tadbirkorlar uchun, 1 daqiqa</div>
+        <h1>Biznesingiz moliyasini qanchalik nazorat qilyapsiz?</h1>
+        <p class="muted" style="font-size:20px">8 ta savolga javob bering. Zaif joylarni topamiz va nima qilish kerakligini ko'rsatamiz.</p>
+        <div><button class="pill dark" id="startBtn" type="button">Testni boshlash</button></div>
+        <p class="fine">Sizga reklama yubormaymiz: raqamingiz faqat natijani yetkazish uchun so'raladi.</p>
+      </div>
+      <div class="blue stack" style="gap:14px">
+        <div class="eyebrow" style="color:oklch(98% .02 240/.85)">Test nimani tekshiradi</div>
+        <div style="font-family:var(--display);font-size:34px;line-height:1.1">Foyda · Qarz · Tartib · Jamoa va ulush</div>
+        <p style="color:oklch(98% .02 240/.9)">Har yo'nalish bo'yicha alohida baho olasiz va qaysi biri sizga pulga tushayotganini ko'rasiz.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Savollar -->
+  <section id="quiz" class="hide" style="padding:24px 0 64px">
+    <div class="card" style="max-width:720px;margin:0 auto">
+      <div class="stack" style="gap:20px">
+        <div style="display:flex;justify-content:space-between;gap:12px" class="fine"><span id="qnum">1 / 8</span><span id="qcat"></span></div>
+        <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+        <h2 id="qtext" style="font-size:36px"></h2>
+        <div class="stack" id="opts" role="group" aria-labelledby="qtext"></div>
+        <div><button class="pill light" id="backBtn" type="button" style="min-height:44px;padding:10px 20px;font-size:15px">Orqaga</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Natijani ochish (ism + telefon) -->
+  <section id="gate" class="hide" style="padding:24px 0 64px">
+    <div class="card" style="max-width:560px;margin:0 auto">
+      <form id="leadForm" class="stack" style="gap:18px" novalidate>
+        <div class="eyebrow">Natijangiz tayyor</div>
+        <h2 style="font-size:40px">Natijani qayerga yuboramiz?</h2>
+        <p class="muted">Ism va telefon raqamingizni kiriting. Natija va tavsiyalar darhol ekranda chiqadi.</p>
+        <div><label for="name">Ismingiz</label><input id="name" name="name" type="text" autocomplete="name" placeholder="Masalan, Jasur" required></div>
+        <div><label for="phone">Telefon raqamingiz</label><input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+998 90 123 45 67" required></div>
+        <p id="formErr" class="fine hide" style="color:var(--negative)" role="alert">Ism va to'g'ri telefon raqamini kiriting.</p>
+        <button class="pill dark" type="submit" id="sendBtn">Natijani ko'rish</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- 4. Natija -->
+  <section id="result" class="hide" style="padding:24px 0 64px">
+    <div class="stack" style="gap:24px">
+      <div class="grid2" style="align-items:stretch">
+        <div class="blue stack" style="gap:10px">
+          <div class="eyebrow" style="color:oklch(98% .02 240/.85)" id="rName"></div>
+          <div class="gauge"><span id="rScore">0</span><span style="font-size:36px;opacity:.7"> / 16</span></div>
+          <div><span class="tag" id="rLevel" style="background:#fff;color:var(--primary)"></span></div>
+          <p style="color:oklch(98% .02 240/.92)" id="rLead"></p>
+        </div>
+        <div class="card stack" style="gap:12px">
+          <div class="eyebrow">Yo'nalishlar bo'yicha</div>
+          <div id="rBars" class="stack" style="gap:14px"></div>
+        </div>
+      </div>
+
+      <div class="card stack" style="gap:18px">
+        <h2 style="font-size:38px">Sizga pulga tushayotgan joylar</h2>
+        <div id="rWeak" class="stack" style="gap:18px"></div>
+      </div>
+
+      <div class="blue stack" style="gap:18px;align-items:flex-start">
+        <h2 style="font-size:42px;max-width:680px" id="rCtaTitle">Bularning hammasini bitta platforma yopadi</h2>
+        <p style="max-width:640px;color:oklch(98% .02 240/.92)">Morefin sotuv, chiqim, qarz, jamoa va rejani bog'lab beradi. Telegram yoki Google orqali kirasiz va <span id="trial">7</span> kun bepul sinab ko'rasiz.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:12px">
+          <a class="pill dark" id="ctaApp" href="https://app.morefin.uz/" rel="noopener">7 kun bepul sinab ko'ring</a>
+          <a class="pill light hide" id="ctaTg" href="#" rel="noopener">Savol bering</a>
+        </div>
+      </div>
+      <p class="fine" style="max-width:720px">Test taxminiy o'z-o'zini baholash vositasi. U rasmiy buxgalteriya yoki audit o'rnini bosmaydi.</p>
+    </div>
+  </section>
+
+  <footer class="fine" style="padding:24px 0 48px">Morefin · app.morefin.uz</footer>
+</div>
+
+<script src="config.js"></script>
+<script>
+(function(){
+var C = window.MOREFIN_CONFIG || {};
+if (C.pixelId) {
+  !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', C.pixelId); fbq('track', 'PageView');
+}
+function track(kind, name, data){ if (window.fbq) { try { fbq(kind, name, data || {}); } catch(e){} } }
+
+var CATS = {
+  foyda: { name: 'Foyda va reja', morefin: 'Dashboard, oylik hisobot va Plan (zararsiz nuqta) bo\'limi foydangizni har kuni ko\'rsatadi.',
+    why: 'Foydani aniq bilmasangiz, narx, xarajat va kengayish haqidagi qarorlar ko\'zda chamalash bilan qilinadi.' },
+  qarz: { name: 'Qarzlar', morefin: 'Qarzlar bo\'limida "Bizga qarz" va "Bizning qarz" muddati bilan turadi. Qisman to\'lovli sotuv qarzni o\'zi yozadi.',
+    why: 'Esda qolmagan qarz yo qaytmaydi, yo muddati o\'tib jarima va ishonch yo\'qotilishiga olib keladi.' },
+  tartib: { name: 'Hisob tartibi', morefin: 'Shaxsiy va Biznes rejimlari alohida: biznes puli bitta joyda, shaxsiy pulingiz alohida.',
+    why: 'Pul aralashganda biznes foydali ham, zararli ham ekanini bilib bo\'lmaydi.' },
+  jamoa: { name: 'Jamoa va ulush', morefin: 'Jamoa va ulush bo\'limi oylik, avans va ulushni qoidalar bo\'yicha o\'zi hisoblaydi.',
+    why: 'Qo\'lda hisoblangan oylik va ulush har oy tortishuv manbai bo\'ladi.' }
+};
+var Q = [
+ { c:'foyda', t:'O\'tgan oy sof foydangiz qancha bo\'lganini aniq ayta olasizmi?', o:[['Ha, aniq raqamni bilaman',0],['Taxminan aytaman',1],['Yo\'q, bilmayman',2]] },
+ { c:'qarz', t:'Mijozlar sizga jami qancha qarz ekanini bilasizmi?', o:[['Ha, ro\'yxat bor',0],['Taxminan bilaman',1],['Yo\'q, esimdan chiqib qolgan',2]] },
+ { c:'qarz', t:'Ta\'minotchi va boshqalarga qarzlaringizning to\'lov muddati yodingizdami?', o:[['Hammasi yodimda yoki yozilgan',0],['Ba\'zilarini eslayman',1],['Muddatni o\'tkazib yuborganman',2]] },
+ { c:'tartib', t:'Hisob-kitobni qayerda yuritasiz?', o:[['Maxsus dasturda',0],['Excel yoki daftarda',1],['Yuritmayman, esimda',2]] },
+ { c:'tartib', t:'Shaxsiy va biznes pulingiz aralashib ketadimi?', o:[['Yo\'q, alohida',0],['Ba\'zan',1],['Doim aralash',2]] },
+ { c:'jamoa', t:'Sherik yoki xodim bilan oylik, ulush haqida tushunmovchilik bo\'lganmi?', o:[['Yo\'q, hammasi aniq',0],['Ba\'zan bo\'lgan',1],['Tez-tez bo\'ladi',2]] },
+ { c:'foyda', t:'Oyiga kamida qancha sotsangiz zarar qilmasligingizni bilasizmi?', o:[['Ha, aniq summani bilaman',0],['Taxminiy tasavvur bor',1],['Yo\'q, bilmayman',2]] },
+ { c:'foyda', t:'Oy oxirida "pul qayerga ketdi?" degan savol paydo bo\'ladimi?', o:[['Hech qachon',0],['Ba\'zan',1],['Deyarli har oy',2]] }
+];
+var i = 0, ans = [], res = null;
+var $ = function(id){ return document.getElementById(id); };
+function show(id){ ['intro','quiz','gate','result'].forEach(function(s){ $(s).classList.toggle('hide', s !== id); }); window.scrollTo({top:0}); }
+function render(){
+  var q = Q[i];
+  $('qnum').textContent = (i+1) + ' / ' + Q.length;
+  $('qcat').textContent = CATS[q.c].name;
+  $('bar').style.width = (i / Q.length * 100) + '%';
+  $('qtext').textContent = q.t;
+  $('backBtn').style.visibility = i === 0 ? 'hidden' : 'visible';
+  var box = $('opts'); box.innerHTML = '';
+  q.o.forEach(function(op){
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'opt'; b.textContent = op[0];
+    b.addEventListener('click', function(){
+      if (i === 0) track('trackCustom', 'QuizStart');
+      ans[i] = op[1];
+      if (i < Q.length - 1) { i++; render(); } else { $('bar').style.width = '100%'; show('gate'); $('name').focus(); }
+    });
+    box.appendChild(b);
+  });
+}
+function compute(){
+  var total = 0, cat = {};
+  Q.forEach(function(q, k){ var v = ans[k] || 0; total += v; cat[q.c] = cat[q.c] || { s:0, m:0 }; cat[q.c].s += v; cat[q.c].m += 2; });
+  var level = total <= 5 ? 'Nazorat yaxshi' : total <= 10 ? 'O\'rtacha xavf' : 'Yuqori xavf';
+  var lead = total <= 5 ? 'Asosiy narsalar nazoratda. Qolgan bo\'shliqlarni yopsangiz, hisob avtomatik ishlaydi.'
+    : total <= 10 ? 'Biznesingiz ishlayapti, lekin moliyaviy ko\'rinish noaniq. Bir necha joyda pul ko\'rinmay ketishi mumkin.'
+    : 'Moliyaviy nazorat juda zaif. Qaror qabul qilayotganda sizda yetarli raqam yo\'q.';
+  var weak = Object.keys(cat).filter(function(k){ return cat[k].s / cat[k].m >= 0.5; }).sort(function(a,b){ return cat[b].s / cat[b].m - cat[a].s / cat[a].m; });
+  return { total: total, level: level, lead: lead, cat: cat, weak: weak };
+}
+function utm(){ return location.search.replace(/^\?/, ''); }
+function phoneOk(p){ return p.replace(/\D/g, '').length >= 9; }
+function showResult(name){
+  $('rName').textContent = name + ', sizning natijangiz';
+  $('rScore').textContent = res.total; $('rLevel').textContent = res.level; $('rLead').textContent = res.lead;
+  var bars = $('rBars'); bars.innerHTML = '';
+  Object.keys(res.cat).forEach(function(k){
+    var p = Math.round(res.cat[k].s / res.cat[k].m * 100);
+    var d = document.createElement('div');
+    d.innerHTML = '<div style="display:flex;justify-content:space-between;font-weight:600;font-size:15px;margin-bottom:6px"><span></span><span class="muted"></span></div><div class="bar"><i></i></div>';
+    d.querySelector('span').textContent = CATS[k].name;
+    d.querySelectorAll('span')[1].textContent = 'Xavf ' + p + '%';
+    bars.appendChild(d);
+    setTimeout(function(){ d.querySelector('i').style.width = p + '%'; }, 60);
+  });
+  var w = $('rWeak'); w.innerHTML = '';
+  var list = res.weak.length ? res.weak : ['foyda'];
+  list.forEach(function(k){
+    var e = document.createElement('div'); e.className = 'weak';
+    e.innerHTML = '<span class="dot"></span><div class="stack" style="gap:6px"><b></b><p class="muted"></p><p style="font-weight:500"></p></div>';
+    e.querySelector('b').textContent = CATS[k].name;
+    e.querySelectorAll('p')[0].textContent = CATS[k].why;
+    e.querySelectorAll('p')[1].textContent = 'Morefin\'da: ' + CATS[k].morefin;
+    w.appendChild(e);
+  });
+  $('trial').textContent = C.trialDays || 7;
+  $('ctaApp').href = C.appUrl || 'https://app.morefin.uz/';
+  $('ctaApp').addEventListener('click', function(){ track('trackCustom', 'TrialClick'); });
+  if (C.telegramUrl) { $('ctaTg').href = C.telegramUrl; $('ctaTg').classList.remove('hide'); }
+  show('result');
+}
+$('startBtn').addEventListener('click', function(){ i = 0; ans = []; show('quiz'); render(); });
+$('backBtn').addEventListener('click', function(){ if (i > 0) { i--; render(); } });
+$('leadForm').addEventListener('submit', function(ev){
+  ev.preventDefault();
+  var name = $('name').value.trim(), phone = $('phone').value.trim();
+  if (!name || !phoneOk(phone)) { $('formErr').classList.remove('hide'); return; }
+  $('formErr').classList.add('hide');
+  res = compute();
+  $('sendBtn').disabled = true;
+  track('track', 'Lead', { content_name: 'baholash', value: res.total });
+  var payload = { source: 'baholash', name: name, phone: phone, score: res.total, level: res.level,
+    weak: res.weak.map(function(k){ return CATS[k].name; }).join(', '), utm: utm() };
+  var done = function(){ showResult(name); };
+  try {
+    fetch('/api/lead', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).then(done, done);
+  } catch (e) { done(); }
+});
+})();
+</script>
+</body>
+</html>
