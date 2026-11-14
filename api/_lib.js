@@ -75,14 +75,26 @@ async function botUsername() {
   return _me;
 }
 
-// Bitta odamga xabar: matn (+ ixtiyoriy video/rasm) va tugma. 403 bo'lsa botni bloklagan deb belgilaydi.
-// btn: { text, url } yoki { text, go: true } (go: shaxsiy "Morefin'ga kirish" havolasi), yoki { text, callback }
+// Bitta odamga xabar. o = { text, type: text|photo|video|animation|video_note|voice|audio|document, media: file_id yoki https havola, btn }
+// btn: { text, url } | { text, go: true } (shaxsiy kuzatiladigan havola) | { text, callback }
+// Fayl Telegram serverida turadi, bazada faqat file_id (qisqa matn) saqlanadi.
+const MEDIA = { photo: 'sendPhoto', video: 'sendVideo', animation: 'sendAnimation', video_note: 'sendVideoNote', voice: 'sendVoice', audio: 'sendAudio', document: 'sendDocument' };
 async function sendTo(tgId, o) {
   const markup = o.btn ? { inline_keyboard: [[o.btn.callback ? { text: o.btn.text, callback_data: o.btn.callback } : { text: o.btn.text, url: o.btn.go ? goLink(tgId) : o.btn.url }]] } : undefined;
+  const type = o.media && MEDIA[o.type] ? o.type : 'text';
   let j;
-  if (o.media && o.mediaType === 'photo') j = await tg('sendPhoto', { chat_id: tgId, photo: o.media, caption: o.text || undefined, reply_markup: markup });
-  else if (o.media) j = await tg('sendVideo', { chat_id: tgId, video: o.media, caption: o.text || undefined, supports_streaming: true, reply_markup: markup });
-  else j = await tg('sendMessage', { chat_id: tgId, text: o.text, reply_markup: markup });
+  if (type === 'text') j = await tg('sendMessage', { chat_id: tgId, text: o.text || '...', reply_markup: markup });
+  else if (type === 'video_note') {
+    // dumaloq videoga matn qo'shib bo'lmaydi: avval video, keyin matn va tugma
+    j = await tg('sendVideoNote', { chat_id: tgId, video_note: o.media, reply_markup: o.text ? undefined : markup });
+    if (j && j.ok && o.text) j = await tg('sendMessage', { chat_id: tgId, text: o.text, reply_markup: markup });
+  } else {
+    const body = { chat_id: tgId, caption: o.text ? o.text.slice(0, 1024) : undefined, reply_markup: markup };
+    body[type] = o.media;
+    if (type === 'video') body.supports_streaming = true;
+    j = await tg(MEDIA[type], body);
+  }
+  if (j && !j.ok) console.log('sendTo xato', tgId, j.error_code, j.description);
   if (j && !j.ok && (j.error_code === 403 || (j.error_code === 400 && /chat not found/i.test(j.description || '')))) await userPatch(tgId, 'blocked');
   return !!(j && j.ok);
 }
@@ -101,23 +113,13 @@ const DEFAULTS = {
   no_vsl_text: "Morefin'da 7 kun bepul sinab ko'rishingiz mumkin:",
   reply_text: "Rahmat! Savollaringizga javob Morefin saytida: tugma orqali kirib, 7 kun bepul sinab ko'ring.",
   followups_on: '1',
-  fu_watch_1: "{name}, mini darslikni hali ko'rmadingiz. Atigi bir necha daqiqa: biznes pulini qanday nazorat qilishni ko'rsatamiz.",
-  fu_watch_2: "{name}, ko'p tadbirkor foydani ham, qarzni ham xotirada yuritadi va adashadi. Mini darslikda buni qanday tartibga solish bor.",
-  fu_watch_3: "{name}, darslikni ko'rib chiqing, keyin Morefin'ni 7 kun bepul sinab ko'rasiz.",
-  fu_watch_4: "{name}, bugun 5 daqiqa ajrating: video sizga sotuv, chiqim va qarzni bir joyda ko'rishni ko'rsatadi.",
-  fu_watch_5: "{name}, Morefin'ga hali kirmadingiz. Videoni ko'ring va bepul sinovni boshlang.",
-  fu_watch_6: "{name}, oxirgi eslatma: mini darslik va 7 kunlik bepul sinov sizni kutyapti.",
-  fu_site_1: "{name}, mini darslikni ko'rdingiz. Endi Morefin'ga kirib, o'z biznesingizni kiriting: 7 kun bepul.",
-  fu_site_2: "{name}, birinchi sotuv yoki chiqimni yozib ko'ring: bu 2 daqiqa oladi, foyda darrov ko'rinadi.",
-  fu_site_3: "{name}, Morefin'da qarzlar va jamoa hisobi ham bor. Bepul sinov davomida hammasini ko'rib chiqing.",
-  fu_site_4: "{name}, hisobni daftardan platformaga o'tkazishga vaqt keldi. 7 kun bepul, karta so'ralmaydi.",
-  fu_site_5: "{name}, Morefin sizni kutyapti. Kirib, bir marta sinab ko'ring.",
-  fu_site_6: "{name}, oxirgi eslatma: bepul sinovni boshlash uchun tugmani bosing."
+  followups: "{\"watch\": [{\"day\": 1, \"text\": \"{name}, mini darslikni hali ko'rmadingiz. Atigi bir necha daqiqa: biznes pulini qanday nazorat qilishni ko'rsatamiz.\", \"type\": \"vsl\", \"media\": \"\", \"btn\": \"gate\", \"btnText\": \"\", \"url\": \"\"}, {\"day\": 2, \"text\": \"{name}, ko'p tadbirkor foydani ham, qarzni ham xotirada yuritadi va adashadi. Mini darslikda buni qanday tartibga solish bor.\", \"type\": \"vsl\", \"media\": \"\", \"btn\": \"gate\", \"btnText\": \"\", \"url\": \"\"}, {\"day\": 4, \"text\": \"{name}, darslikni ko'rib chiqing, keyin Morefin'ni 7 kun bepul sinab ko'rasiz.\", \"type\": \"vsl\", \"media\": \"\", \"btn\": \"gate\", \"btnText\": \"\", \"url\": \"\"}, {\"day\": 7, \"text\": \"{name}, bugun 5 daqiqa ajrating: video sizga sotuv, chiqim va qarzni bir joyda ko'rishni ko'rsatadi.\", \"type\": \"vsl\", \"media\": \"\", \"btn\": \"gate\", \"btnText\": \"\", \"url\": \"\"}, {\"day\": 10, \"text\": \"{name}, Morefin'ga hali kirmadingiz. Videoni ko'ring va bepul sinovni boshlang.\", \"type\": \"vsl\", \"media\": \"\", \"btn\": \"gate\", \"btnText\": \"\", \"url\": \"\"}, {\"day\": 14, \"text\": \"{name}, oxirgi eslatma: mini darslik va 7 kunlik bepul sinov sizni kutyapti.\", \"type\": \"vsl\", \"media\": \"\", \"btn\": \"gate\", \"btnText\": \"\", \"url\": \"\"}], \"site\": [{\"day\": 1, \"text\": \"{name}, mini darslikni ko'rdingiz. Endi Morefin'ga kirib, o'z biznesingizni kiriting: 7 kun bepul.\", \"type\": \"text\", \"media\": \"\", \"btn\": \"go\", \"btnText\": \"\", \"url\": \"\"}, {\"day\": 2, \"text\": \"{name}, birinchi sotuv yoki chiqimni yozib ko'ring: bu 2 daqiqa oladi, foyda darrov ko'rinadi.\", \"type\": \"text\", \"media\": \"\", \"btn\": \"go\", \"btnText\": \"\", \"url\": \"\"}, {\"day\": 4, \"text\": \"{name}, Morefin'da qarzlar va jamoa hisobi ham bor. Bepul sinov davomida hammasini ko'rib chiqing.\", \"type\": \"text\", \"media\": \"\", \"btn\": \"go\", \"btnText\": \"\", \"url\": \"\"}, {\"day\": 7, \"text\": \"{name}, hisobni daftardan platformaga o'tkazishga vaqt keldi. 7 kun bepul, karta so'ralmaydi.\", \"type\": \"text\", \"media\": \"\", \"btn\": \"go\", \"btnText\": \"\", \"url\": \"\"}, {\"day\": 10, \"text\": \"{name}, Morefin sizni kutyapti. Kirib, bir marta sinab ko'ring.\", \"type\": \"text\", \"media\": \"\", \"btn\": \"go\", \"btnText\": \"\", \"url\": \"\"}, {\"day\": 14, \"text\": \"{name}, oxirgi eslatma: bepul sinovni boshlash uchun tugmani bosing.\", \"type\": \"text\", \"media\": \"\", \"btn\": \"go\", \"btnText\": \"\", \"url\": \"\"}]}"
 };
 async function getCfg() {
   const saved = (await rpc('mf_cfg_get', {})) || {};
   const c = Object.assign({}, DEFAULTS, { vsl_file_id: process.env.VSL_FILE_ID || '', watch_seconds: process.env.WATCH_SECONDS || DEFAULTS.watch_seconds });
   Object.keys(saved).forEach((k) => { if (k in DEFAULTS && saved[k] !== '') c[k] = saved[k]; });
+  try { c.fu = JSON.parse(c.followups); } catch (e) { c.fu = JSON.parse(DEFAULTS.followups); }
   return c;
 }
 const fill = (t, name, extra) => String(t || '').replace(/\{name\}/g, name || "do'stim").replace(/\{sec\}/g, extra == null ? '' : extra);

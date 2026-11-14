@@ -75,10 +75,11 @@ module.exports = async (req, res) => {
     const msg = up.message;
     if (msg && msg.chat && msg.chat.type === 'private') {
       const isAdmin = String(msg.chat.id) === String(process.env.ADMIN_CHAT_ID || '');
-      const media = msg.video || msg.animation || msg.video_note || (msg.document && /video/.test(msg.document.mime_type || '') ? msg.document : null);
-      const photo = msg.photo && msg.photo.length ? msg.photo[msg.photo.length - 1] : null;
-      if (isAdmin && (media || photo)) {
-        await tg('sendMessage', { chat_id: msg.chat.id, text: (media ? 'Video' : 'Rasm') + " file_id (admin panel → Bot sozlamalari yoki Xabar yuborish ga qo'ying):\n" + (media || photo).file_id });
+      const kinds = [['animation', 'GIF'], ['video', 'Video'], ['video_note', 'Dumaloq video'], ['voice', 'Ovozli xabar'], ['audio', 'Audio'], ['document', 'Fayl'], ['photo', 'Rasm']];
+      const k = isAdmin && kinds.find((x) => msg[x[0]]);
+      if (k) {
+        const m = k[0] === 'photo' ? msg.photo[msg.photo.length - 1] : msg[k[0]];
+        await tg('sendMessage', { chat_id: msg.chat.id, text: k[1] + " (turi: " + k[0] + ")\nfile_id ni admin panelga qo'ying:\n\n" + m.file_id });
       } else if (msg.text && msg.text.startsWith('/start')) {
         await onStart(msg);
       } else if (msg.text) {

@@ -63,8 +63,11 @@ label{display:block;font-size:13px;font-weight:600;margin:0 0 6px}
 .feed{display:flex;flex-direction:column;gap:6px;font-size:13.5px;max-height:360px;overflow:auto}
 .feed div{display:flex;gap:10px}.feed time{color:var(--muted);min-width:86px;font-variant-numeric:tabular-nums}
 .code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:var(--canvas);border-radius:10px;padding:10px 12px;word-break:break-all}
-.fu{display:grid;grid-template-columns:90px 1fr;gap:10px;align-items:start}
-.fu span{font-size:13px;color:var(--muted);padding-top:10px}
+.step{border:1px solid var(--border);border-radius:16px;padding:14px;display:grid;gap:10px;background:var(--card-solid)}
+.step .h{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.step .h b{font-size:15px}
+.step .h input{width:80px}.step .h .sp{margin-left:auto}
+.g3{display:grid;grid-template-columns:240px 1fr;gap:10px}.g3b{display:grid;grid-template-columns:240px 1fr 1fr;gap:10px}
+@media(max-width:860px){.g3,.g3b{grid-template-columns:1fr}}
 .toggle{display:flex;align-items:center;gap:10px;font-weight:500;font-size:14px}
 .toggle input{width:18px;height:18px}
 dialog{border:0;border-radius:20px;padding:22px;max-width:520px;width:92vw;box-shadow:0 20px 60px oklch(20% .04 260/.25)}
@@ -139,8 +142,8 @@ dialog::backdrop{background:oklch(20% .03 260/.35)}
     <div class="segs" id="segs"></div>
     <div><label for="bcText">Matn</label><textarea id="bcText" maxlength="1000" placeholder="{name}, ... ({name} o'rniga odamning ismi qo'yiladi)"></textarea></div>
     <div class="two"><div><label for="bcMedia">Video yoki rasm (file_id, ixtiyoriy)</label><input type="text" id="bcMedia" placeholder="Botga video/rasm yuboring, u file_id qaytaradi"></div>
-     <div><label for="bcMt">Media turi</label><select id="bcMt"><option value="video">Video</option><option value="photo">Rasm</option></select></div></div>
-    <div class="two"><div><label for="bcBtn">Tugma</label><select id="bcBtn"><option value="go">Morefin'ga kirish (kuzatiladi)</option><option value="url">Boshqa havola</option><option value="none">Tugmasiz</option></select></div>
+     <div><label for="bcMt">Media turi</label><select id="bcMt"><option value="video">Video</option><option value="photo">Rasm</option><option value="video_note">Dumaloq video</option><option value="voice">Ovozli xabar</option><option value="animation">GIF</option><option value="audio">Audio</option><option value="document">Fayl</option></select></div></div>
+    <div class="two"><div><label for="bcBtn">Tugma</label><select id="bcBtn"><option value="go">Morefin'ga kirish (kuzatiladi)</option><option value="gate">Video tugmasi (vaqt o'tgach ochiladi)</option><option value="url">Boshqa havola</option><option value="none">Tugmasiz</option></select></div>
      <div><label for="bcBtnText">Tugma matni</label><input type="text" id="bcBtnText" value="Morefin'ga kirish" maxlength="60"></div></div>
     <div id="bcUrlW" class="hide"><label for="bcUrl">Havola</label><input type="text" id="bcUrl" placeholder="https://..."></div>
     <div class="msg hide" id="bcMsg" role="status"></div>
@@ -162,10 +165,12 @@ dialog::backdrop{background:oklch(20% .03 260/.35)}
     <div class="two"><div><label for="c_gw">Erta bosganda ({sec} = qolgan soniya)</label><input type="text" data-k="gate_wait" id="c_gw"></div><div><label for="c_gd">Tugma ochilganda</label><input type="text" data-k="gate_done" id="c_gd"></div></div>
     <div><label for="c_nv">Video sozlanmagan bo'lsa</label><input type="text" data-k="no_vsl_text" id="c_nv"></div>
     <div><label for="c_rt">Odam botga yozsa javob</label><textarea data-k="reply_text" id="c_rt" style="min-height:60px"></textarea></div></div>
-   <div class="card f"><div><h2>Avtomatik eslatmalar</h2><p class="sub" style="margin:0">Har kuni 10:00 da. Botga kirib, Morefin'ga o'tmaganlarga 6 marta: 1, 2, 4, 7, 10, 14-kun. Saytga o'tgan zahoti to'xtaydi.</p></div>
+   <div class="card f"><div><h2>Avtomatik eslatmalar</h2><p class="sub" style="margin:0">Har kuni 10:00 da tekshiriladi. Botga kirib, Morefin'ga o'tmaganlarga yuboriladi. Saytga o'tgan zahoti to'xtaydi.</p></div>
     <label class="toggle"><input type="checkbox" id="c_fon"> Eslatmalar yoqilgan</label>
-    <h3 style="margin:6px 0 0;font-size:17px">Videoni ko'rmaganlarga (video qayta yuboriladi)</h3><div class="f" id="fuW"></div>
-    <h3 style="margin:6px 0 0;font-size:17px">Ko'rgan, lekin saytga o'tmaganlarga (havola tugmasi bilan)</h3><div class="f" id="fuS"></div></div>
+    <p class="note" style="margin:0">Har qadam uchun: qaysi kuni, nima yuborilsin (matn, rasm, video, dumaloq video, ovozli xabar, GIF, audio, fayl) va qanday tugma. Media uchun: faylni botga o'zingiz yuboring, bot file_id qaytaradi, shuni qo'ying. Rasm/video uchun https havola ham bo'ladi.</p>
+    <div class="seg" id="fuTab" style="align-self:flex-start"><button type="button" data-t="watch" class="on">Videoni ko'rmaganlar</button><button type="button" data-t="site">Ko'rgan, saytga o'tmaganlar</button></div>
+    <div class="f" id="fuList"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" type="button" id="fuAdd">+ Qadam qo'shish</button><span class="note" style="align-self:center">Kunlar ikkala ro'yxatda bir xil. Odam qaysi bosqichda bo'lsa, o'sha ro'yxatdagi xabar boradi.</span></div></div>
    <div class="msg hide" id="cfMsg" role="status"></div>
    <div style="position:sticky;bottom:12px;display:flex;gap:10px"><button class="pill dark" type="submit">Saqlash</button><button class="btn" type="button" id="cfReset">Standart matnlarni ko'rsatish</button></div>
   </form></section>
@@ -263,17 +268,37 @@ function render(){renderOv();renderAds();renderPpl();renderBc();$('stamp').textC
 function load(){return api('/api/admin?days='+days).then(function(j){D=j;$('login').classList.add('hide');$('app').classList.remove('hide');render()}).catch(function(e){if(e&&e.message)$('lerr').textContent=e.message})}
 
 // sozlamalar
-var FU=[1,2,4,7,10,14];
-$('fuW').innerHTML=FU.map(function(d,i){return '<div class="fu"><span>'+d+'-kun</span><textarea data-k="fu_watch_'+(i+1)+'" aria-label="Videoni ko\'rmaganlarga, '+d+'-kun" style="min-height:60px"></textarea></div>'}).join('');
-$('fuS').innerHTML=FU.map(function(d,i){return '<div class="fu"><span>'+d+'-kun</span><textarea data-k="fu_site_'+(i+1)+'" aria-label="Saytga o\'tmaganlarga, '+d+'-kun" style="min-height:60px"></textarea></div>'}).join('');
-function fillCfg(c){[].forEach.call(document.querySelectorAll('[data-k]'),function(el){el.value=c[el.dataset.k]==null?'':c[el.dataset.k]});$('c_fon').checked=c.followups_on==='1'}
+var FUD={watch:[],site:[]}, fuT='watch';
+var TYPES=[['text','Faqat matn'],['vsl','Mini darslik (VSL)'],['photo','Rasm'],['video','Video'],['video_note','Dumaloq video'],['voice','Ovozli xabar'],['animation','GIF'],['audio','Audio'],['document','Fayl']];
+var BTNS=[['go',"Morefin'ga kirish (kuzatiladi)"],['gate',"Video tugmasi (vaqt o'tgach ochiladi)"],['url','Boshqa havola'],['none','Tugmasiz']];
+function opts(list,v){return list.map(function(o){return '<option value="'+o[0]+'"'+(o[0]===v?' selected':'')+'>'+o[1]+'</option>'}).join('')}
+function readFu(){[].forEach.call($('fuList').querySelectorAll('.step'),function(el,i){var st=FUD[fuT][i];[].forEach.call(el.querySelectorAll('[data-f]'),function(x){st[x.dataset.f]=x.dataset.f==='day'?(+x.value||0):x.value})})}
+function drawFu(){var L=FUD[fuT];
+  $('fuList').innerHTML=L.map(function(st,i){var m=st.type!=='text'&&st.type!=='vsl';
+    return '<div class="step"><div class="h"><b>'+(i+1)+'-eslatma</b><label style="margin:0;font-weight:500">Botga kirgandan</label><input type="number" min="0" max="90" data-f="day" value="'+(FUD.watch[i]?FUD.watch[i].day:st.day)+'" aria-label="Kun"><span class="note">-kun</span>'
+    +'<button type="button" class="btn sp" data-test="'+i+'">O\'zimga sinov</button><button type="button" class="btn" data-del="'+i+'" aria-label="O\'chirish">O\'chirish</button></div>'
+    +'<div class="g3"><select data-f="type" aria-label="Turi">'+opts(TYPES,st.type)+'</select><input type="text" data-f="media" placeholder="'+(st.type==='vsl'?'Bot sozlamalaridagi VSL video ishlatiladi':'file_id yoki https havola')+'" value="'+esc(st.media||'')+'"'+(m?'':' disabled')+' aria-label="file_id"></div>'
+    +'<textarea data-f="text" style="min-height:60px" aria-label="Matn" placeholder="'+(st.type==='video_note'?'Dumaloq videodan keyin alohida xabar bo\'lib boradi':'{name} = ism')+'">'+esc(st.text||'')+'</textarea>'
+    +'<div class="g3b"><select data-f="btn" aria-label="Tugma">'+opts(BTNS,st.btn)+'</select><input type="text" data-f="btnText" maxlength="60" placeholder="Tugma matni (bo\'sh = standart)" value="'+esc(st.btnText||'')+'"'+(st.btn==='none'?' disabled':'')+'><input type="text" data-f="url" placeholder="https://..." value="'+esc(st.url||'')+'"'+(st.btn==='url'?'':' disabled')+'></div></div>'}).join('')||'<p class="note">Qadam yo\'q</p>';
+}
+$('fuTab').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;readFu();fuT=b.dataset.t;[].forEach.call(this.children,function(x){x.classList.toggle('on',x===b)});drawFu()});
+$('fuList').addEventListener('change',function(e){if(e.target.dataset.f==='type'||e.target.dataset.f==='btn'){readFu();drawFu()}if(e.target.dataset.f==='day'){readFu();var i=[].indexOf.call($('fuList').children,e.target.closest('.step'));FUD.watch[i].day=FUD.site[i].day=+e.target.value||0}});
+$('fuList').addEventListener('click',function(e){var d=e.target.closest('[data-del]'),t=e.target.closest('[data-test]');
+  if(d){readFu();var i=+d.dataset.del;if(confirm((i+1)+'-eslatma ikkala ro\'yxatdan o\'chirilsinmi?')){FUD.watch.splice(i,1);FUD.site.splice(i,1);drawFu()}}
+  if(t){readFu();var st=FUD[fuT][+t.dataset.test],btn=t;btn.disabled=true;
+    var type=st.type==='vsl'?'video':st.type,media=st.type==='vsl'?$('c_vsl').value.trim():st.media;
+    api('/api/broadcast',{method:'POST',body:JSON.stringify({segment:'test',text:st.text,media:media,mediaType:media?type:'text',btnMode:st.btn,btnText:st.btnText,btnUrl:st.url})})
+    .then(function(j){btn.textContent=j.sent?'Yuborildi ✓':'Yetmadi'}).catch(function(e){alert(e&&e.message||'Xato')}).then(function(){btn.disabled=false;setTimeout(function(){btn.textContent='O\'zimga sinov'},2500)})}});
+$('fuAdd').addEventListener('click',function(){readFu();var last=FUD.watch[FUD.watch.length-1],day=last?last.day+3:1;
+  FUD.watch.push({day:day,text:'{name}, ',type:'vsl',media:'',btn:'gate',btnText:'',url:''});FUD.site.push({day:day,text:'{name}, ',type:'text',media:'',btn:'go',btnText:'',url:''});drawFu()});
+function fillCfg(c){[].forEach.call(document.querySelectorAll('[data-k]'),function(el){el.value=c[el.dataset.k]==null?'':c[el.dataset.k]});$('c_fon').checked=c.followups_on==='1';try{FUD=JSON.parse(c.followups)}catch(e){FUD={watch:[],site:[]}}drawFu()}
 function loadCfg(){return api('/api/config').then(function(j){CFG=j;fillCfg(j.cfg);if(j.bot){var a=$('botlink');a.href='https://t.me/'+j.bot;a.textContent='@'+j.bot+' ↗'}})}
-$('cf').addEventListener('submit',function(e){e.preventDefault();var v={};[].forEach.call(document.querySelectorAll('[data-k]'),function(el){v[el.dataset.k]=el.value.trim()});v.followups_on=$('c_fon').checked?'1':'0';
+$('cf').addEventListener('submit',function(e){e.preventDefault();var v={};[].forEach.call(document.querySelectorAll('[data-k]'),function(el){v[el.dataset.k]=el.value.trim()});v.followups_on=$('c_fon').checked?'1':'0';readFu();FUD.site.forEach(function(x,i){x.day=FUD.watch[i].day});v.followups=JSON.stringify(FUD);
   show($('cfMsg'),'Saqlanmoqda...');api('/api/config',{method:'POST',body:JSON.stringify({values:v})}).then(function(j){CFG=j;fillCfg(j.cfg);show($('cfMsg'),'Saqlandi. Bot darhol yangi matnlardan foydalanadi.','okm')}).catch(function(e){if(e)show($('cfMsg'),e.message,'err')})});
 $('cfReset').addEventListener('click',function(){if(CFG&&confirm('Barcha maydonlarga standart matnlar qo\'yilsinmi? Saqlash tugmasini bosmaguningizcha hech narsa o\'zgarmaydi.')){fillCfg(Object.assign({},CFG.defaults,{vsl_file_id:CFG.cfg.vsl_file_id}));show($('cfMsg'),'Standart matnlar qo\'yildi. Saqlash uchun "Saqlash" ni bosing.')}});
 
 // xabar yuborish
-function bcBody(seg){return {segment:seg,text:$('bcText').value.trim(),media:$('bcMedia').value.trim(),mediaType:$('bcMt').value,btnMode:$('bcBtn').value,btnText:$('bcBtnText').value.trim(),btnUrl:$('bcUrl').value.trim()}}
+function bcBody(seg){return {segment:seg,text:$('bcText').value.trim(),media:$('bcMedia').value.trim(),mediaType:$('bcMedia').value.trim()?$('bcMt').value:'text',btnMode:$('bcBtn').value,btnText:$('bcBtnText').value.trim(),btnUrl:$('bcUrl').value.trim()}}
 $('bcBtn').addEventListener('change',function(){$('bcUrlW').classList.toggle('hide',this.value!=='url');$('bcBtnText').disabled=this.value==='none'});
 function bcSend(seg,btn){var b=bcBody(seg);if(!b.text&&!b.media){show($('bcMsg'),'Matn yoki media kiriting','err');return}
   btn.disabled=true;show($('bcMsg'),'Yuborilmoqda...');
