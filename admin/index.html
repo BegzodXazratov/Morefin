@@ -153,7 +153,19 @@ dialog::backdrop{background:oklch(20% .03 260/.35)}
   </div></section>
 
   <!-- SOZLAMALAR -->
-  <section class="sec" id="s-cfg"><form class="grid" id="cf">
+  <section class="sec" id="s-cfg"><div class="card f" id="bp" style="margin-bottom:16px">
+    <div><h2>Bot profili</h2><p class="sub" style="margin:0">Telegram'da ko'rinadigan nom, tavsif va rasm. Username (@) faqat BotFather orqali o'zgaradi.</p></div>
+    <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
+     <div style="display:flex;flex-direction:column;gap:8px;align-items:center;width:120px"><img id="bpImg" alt="" style="width:96px;height:96px;border-radius:50%;object-fit:cover;background:var(--canvas)"><label class="btn" for="bpFile" style="margin:0;text-align:center">Rasm tanlash</label><input type="file" id="bpFile" accept="image/jpeg,image/png" class="hide"></div>
+     <div class="f" style="flex:1;min-width:260px">
+      <div><label for="bpName">Bot nomi (64 belgi)</label><input type="text" id="bpName" maxlength="64"></div>
+      <div><label for="bpShort">Bio / qisqa tavsif: profilda va ulashganda ko'rinadi (120 belgi)</label><textarea id="bpShort" maxlength="120" style="min-height:60px"></textarea></div>
+      <div><label for="bpDesc">Tavsif: /start bosishdan oldin bo'sh chatda ko'rinadi (512 belgi)</label><textarea id="bpDesc" maxlength="512"></textarea></div>
+     </div></div>
+    <div class="msg hide" id="bpMsg" role="status"></div>
+    <div><button class="pill dark" type="button" id="bpSave">Profilni saqlash</button></div>
+   </div>
+   <form class="grid" id="cf">
    <div class="card f"><div><h2>Kutib olish</h2><p class="sub" style="margin:0">/start bosilganda. {name} = ism. Baholashdan kelganlarga test natijasi avtomatik qo'shiladi.</p></div>
     <div><label for="c_greeting">Salomlashish</label><textarea data-k="greeting" id="c_greeting"></textarea></div>
     <div><label for="c_intro">Videodan oldingi matn</label><textarea data-k="intro" id="c_intro"></textarea></div></div>
@@ -292,7 +304,16 @@ $('fuList').addEventListener('click',function(e){var d=e.target.closest('[data-d
 $('fuAdd').addEventListener('click',function(){readFu();var last=FUD.watch[FUD.watch.length-1],day=last?last.day+3:1;
   FUD.watch.push({day:day,text:'{name}, ',type:'vsl',media:'',btn:'gate',btnText:'',url:''});FUD.site.push({day:day,text:'{name}, ',type:'text',media:'',btn:'go',btnText:'',url:''});drawFu()});
 function fillCfg(c){[].forEach.call(document.querySelectorAll('[data-k]'),function(el){el.value=c[el.dataset.k]==null?'':c[el.dataset.k]});$('c_fon').checked=c.followups_on==='1';try{FUD=JSON.parse(c.followups)}catch(e){FUD={watch:[],site:[]}}drawFu()}
-function loadCfg(){return api('/api/config').then(function(j){CFG=j;fillCfg(j.cfg);if(j.bot){var a=$('botlink');a.href='https://t.me/'+j.bot;a.textContent='@'+j.bot+' ↗'}})}
+var bpPhoto=null;
+function loadBp(){return api('/api/botinfo').then(function(j){$('bpName').value=j.name;$('bpShort').value=j.short_description;$('bpDesc').value=j.description})}
+$('bpFile').addEventListener('change',function(){var f=this.files[0];if(!f)return;var im=new Image(),u=URL.createObjectURL(f);im.onload=function(){var c=document.createElement('canvas'),z=Math.min(im.width,im.height);c.width=c.height=640;
+  c.getContext('2d').drawImage(im,(im.width-z)/2,(im.height-z)/2,z,z,0,0,640,640);bpPhoto=c.toDataURL('image/jpeg',.88);$('bpImg').src=bpPhoto;URL.revokeObjectURL(u)};im.src=u});
+$('bpSave').addEventListener('click',function(){var btn=this,b={name:$('bpName').value.trim(),short_description:$('bpShort').value.trim(),description:$('bpDesc').value.trim()};if(bpPhoto)b.photo=bpPhoto;
+  btn.disabled=true;show($('bpMsg'),'Saqlanmoqda...');
+  api('/api/botinfo',{method:'POST',body:JSON.stringify(b)}).then(function(j){var r=j.result||{},bad=Object.keys(r).filter(function(k){return r[k]!==true});
+    show($('bpMsg'),bad.length?bad.map(function(k){return ({name:'Nom',short_description:'Bio',description:'Tavsif',photo:'Rasm'}[k]||k)+': '+r[k]}).join(' · '):'Saqlandi. Telegram\'da bir necha daqiqada yangilanadi.',bad.length?'err':'okm');if(!bad.length)bpPhoto=null})
+  .catch(function(e){if(e)show($('bpMsg'),e.message,'err')}).then(function(){btn.disabled=false})});
+function loadCfg(){loadBp();return api('/api/config').then(function(j){CFG=j;fillCfg(j.cfg);if(j.bot){var a=$('botlink');a.href='https://t.me/'+j.bot;a.textContent='@'+j.bot+' ↗'}})}
 $('cf').addEventListener('submit',function(e){e.preventDefault();var v={};[].forEach.call(document.querySelectorAll('[data-k]'),function(el){v[el.dataset.k]=el.value.trim()});v.followups_on=$('c_fon').checked?'1':'0';readFu();FUD.site.forEach(function(x,i){x.day=FUD.watch[i].day});v.followups=JSON.stringify(FUD);
   show($('cfMsg'),'Saqlanmoqda...');api('/api/config',{method:'POST',body:JSON.stringify({values:v})}).then(function(j){CFG=j;fillCfg(j.cfg);show($('cfMsg'),'Saqlandi. Bot darhol yangi matnlardan foydalanadi.','okm')}).catch(function(e){if(e)show($('cfMsg'),e.message,'err')})});
 $('cfReset').addEventListener('click',function(){if(CFG&&confirm('Barcha maydonlarga standart matnlar qo\'yilsinmi? Saqlash tugmasini bosmaguningizcha hech narsa o\'zgarmaydi.')){fillCfg(Object.assign({},CFG.defaults,{vsl_file_id:CFG.cfg.vsl_file_id}));show($('cfMsg'),'Standart matnlar qo\'yildi. Saqlash uchun "Saqlash" ni bosing.')}});
