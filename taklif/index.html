@@ -106,8 +106,7 @@ if (C.pixelId) {
   fbq('init', C.pixelId); fbq('track', 'PageView'); fbq('track', 'ViewContent', { content_name: 'taklif' });
 }
 var id = window.mfNewId(), btn = document.getElementById('ctaBot');
-btn.href = window.mfBotLink('t', id);
-btn.addEventListener('click', function(){ window.mfPixel('track', 'Contact', { content_name: 'taklif' }); window.mfTrack('bot_click', id); });
+window.mfBindBot(btn, 't', id, function(){ window.mfPixel('track', 'Contact', { content_name: 'taklif' }); window.mfTrack('bot_click', id); });
 })();
 </script>
 </body>

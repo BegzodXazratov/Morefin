@@ -10,6 +10,8 @@ module.exports = async (req, res) => {
   if (KINDS.indexOf(b.kind) === -1 || SITES.indexOf(b.site) === -1) return res.status(400).json({ ok: false });
   const ref = /^[a-z0-9]{4,12}$/.test(String(b.ref || '')) ? String(b.ref) : null;
   const meta = {};
+  ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'].forEach((k) => { if (b[k]) meta[k] = String(b[k]).slice(0, 120); });
+  if (b.fbclid) meta.fb = 1;
   if (b.kind === 'bot_click') {
     const fwd = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim();
     if (fwd) meta.ip = fwd.slice(0, 64);

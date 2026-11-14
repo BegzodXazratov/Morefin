@@ -201,8 +201,7 @@ function showResult(){
     w.appendChild(e);
   });
   $('trial').textContent = C.trialDays || 7;
-  var cb = $('ctaBot'); cb.href = window.mfBotLink('b' + res.total, window.__leadId);
-  cb.addEventListener('click', function(){ track('trackCustom', 'BotClick'); track('track', 'Contact'); window.mfTrack('bot_click', window.__leadId, { score: res.total }); });
+  window.mfBindBot($('ctaBot'), 'b' + res.total, window.__leadId, function(){ track('trackCustom', 'BotClick'); track('track', 'Contact'); window.mfTrack('bot_click', window.__leadId, { score: res.total }); });
   show('result');
 }
 $('startBtn').addEventListener('click', function(){ i = 0; ans = []; show('quiz'); render(); });

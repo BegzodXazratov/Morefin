@@ -61,4 +61,65 @@ function cors(req, res) {
 }
 const bodyOf = (req) => { try { return typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {}); } catch (e) { return {}; } };
 
-module.exports = { rpc, track, userStart, userPatch, leadMeta, tg, capi, goLink, sign, cors, bodyOf };
+
+// Admin parol tekshiruvi (sarlavha x-admin-password)
+const h = (v) => crypto.createHash('sha256').update(String(v)).digest();
+const adminOk = (req) => { const pw = process.env.ADMIN_PASSWORD; return !!pw && crypto.timingSafeEqual(h(req.headers['x-admin-password'] || ''), h(pw)); };
+
+// Bot username (getMe), xotirada saqlanadi. Saytlar shu orqali botga o'tadi.
+let _me = null;
+async function botUsername() {
+  if (_me) return _me;
+  const j = await tg('getMe', {});
+  if (j && j.ok && j.result) _me = j.result.username;
+  return _me;
+}
+
+// Bitta odamga xabar: matn (+ ixtiyoriy video/rasm) va tugma. 403 bo'lsa botni bloklagan deb belgilaydi.
+// btn: { text, url } yoki { text, go: true } (go: shaxsiy "Morefin'ga kirish" havolasi), yoki { text, callback }
+async function sendTo(tgId, o) {
+  const markup = o.btn ? { inline_keyboard: [[o.btn.callback ? { text: o.btn.text, callback_data: o.btn.callback } : { text: o.btn.text, url: o.btn.go ? goLink(tgId) : o.btn.url }]] } : undefined;
+  let j;
+  if (o.media && o.mediaType === 'photo') j = await tg('sendPhoto', { chat_id: tgId, photo: o.media, caption: o.text || undefined, reply_markup: markup });
+  else if (o.media) j = await tg('sendVideo', { chat_id: tgId, video: o.media, caption: o.text || undefined, supports_streaming: true, reply_markup: markup });
+  else j = await tg('sendMessage', { chat_id: tgId, text: o.text, reply_markup: markup });
+  if (j && !j.ok && (j.error_code === 403 || (j.error_code === 400 && /chat not found/i.test(j.description || '')))) await userPatch(tgId, 'blocked');
+  return !!(j && j.ok);
+}
+
+// Bot sozlamalari: admin paneldan o'zgartiriladi (mf_settings, cfg:*), bo'sh bo'lsa standart qiymat.
+const DEFAULTS = {
+  greeting: "Assalomu alaykum, {name}! Morefin botiga xush kelibsiz.",
+  intro: "Morefin'ga kirishdan oldin mini darslikni ko'rib chiqing. Unda biznes pulini qanday tartibga solish ko'rsatilgan:",
+  vsl_file_id: '',
+  vsl_caption: "Mini darslik: Morefin bilan biznes pulini qanday nazorat qilish",
+  gate_btn: "Saytga o'tish",
+  gate_wait: "Oldin videoni ko'ring. Havola taxminan {sec} soniyadan keyin ochiladi.",
+  gate_done: "Tayyor! Endi tugma ishlaydi.",
+  go_btn: "Morefin'ga kirish",
+  watch_seconds: '30',
+  no_vsl_text: "Morefin'da 7 kun bepul sinab ko'rishingiz mumkin:",
+  reply_text: "Rahmat! Savollaringizga javob Morefin saytida: tugma orqali kirib, 7 kun bepul sinab ko'ring.",
+  followups_on: '1',
+  fu_watch_1: "{name}, mini darslikni hali ko'rmadingiz. Atigi bir necha daqiqa: biznes pulini qanday nazorat qilishni ko'rsatamiz.",
+  fu_watch_2: "{name}, ko'p tadbirkor foydani ham, qarzni ham xotirada yuritadi va adashadi. Mini darslikda buni qanday tartibga solish bor.",
+  fu_watch_3: "{name}, darslikni ko'rib chiqing, keyin Morefin'ni 7 kun bepul sinab ko'rasiz.",
+  fu_watch_4: "{name}, bugun 5 daqiqa ajrating: video sizga sotuv, chiqim va qarzni bir joyda ko'rishni ko'rsatadi.",
+  fu_watch_5: "{name}, Morefin'ga hali kirmadingiz. Videoni ko'ring va bepul sinovni boshlang.",
+  fu_watch_6: "{name}, oxirgi eslatma: mini darslik va 7 kunlik bepul sinov sizni kutyapti.",
+  fu_site_1: "{name}, mini darslikni ko'rdingiz. Endi Morefin'ga kirib, o'z biznesingizni kiriting: 7 kun bepul.",
+  fu_site_2: "{name}, birinchi sotuv yoki chiqimni yozib ko'ring: bu 2 daqiqa oladi, foyda darrov ko'rinadi.",
+  fu_site_3: "{name}, Morefin'da qarzlar va jamoa hisobi ham bor. Bepul sinov davomida hammasini ko'rib chiqing.",
+  fu_site_4: "{name}, hisobni daftardan platformaga o'tkazishga vaqt keldi. 7 kun bepul, karta so'ralmaydi.",
+  fu_site_5: "{name}, Morefin sizni kutyapti. Kirib, bir marta sinab ko'ring.",
+  fu_site_6: "{name}, oxirgi eslatma: bepul sinovni boshlash uchun tugmani bosing."
+};
+async function getCfg() {
+  const saved = (await rpc('mf_cfg_get', {})) || {};
+  const c = Object.assign({}, DEFAULTS, { vsl_file_id: process.env.VSL_FILE_ID || '', watch_seconds: process.env.WATCH_SECONDS || DEFAULTS.watch_seconds });
+  Object.keys(saved).forEach((k) => { if (k in DEFAULTS && saved[k] !== '') c[k] = saved[k]; });
+  return c;
+}
+const fill = (t, name, extra) => String(t || '').replace(/\{name\}/g, name || "do'stim").replace(/\{sec\}/g, extra == null ? '' : extra);
+
+module.exports = { DEFAULTS, getCfg, fill, rpc, track, userStart, userPatch, leadMeta, tg, capi, goLink, sign, cors, bodyOf, adminOk, botUsername, sendTo, publicUrl };
