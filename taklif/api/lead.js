@@ -14,6 +14,7 @@ module.exports = async (req, res) => {
   if (b.score !== undefined) lines.push('Natija: ' + b.score + '/16 (' + String(b.level || '') + ')');
   if (b.weak) lines.push('Zaif joylar: ' + String(b.weak).slice(0, 200));
   if (b.wantsVideo) lines.push('Videodarslik so\'radi: ha');
+  if (b.id) lines.push('Lead kodi: ' + String(b.id).slice(0, 12));
   if (b.utm) lines.push('UTM: ' + String(b.utm).slice(0, 200));
   const text = lines.join('\n');
   // Ixtiyoriy: Geron (yoki boshqa CRM) webhook. Env: GERON_WEBHOOK_URL

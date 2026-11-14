@@ -92,14 +92,13 @@
         <p class="muted">Platformaga kirish havolasini ko'rsatamiz. Jamoamiz kerak bo'lsa yordam berish uchun qo'ng'iroq qiladi.</p>
         <div><label for="name">Ismingiz</label><input id="name" type="text" autocomplete="name" placeholder="Masalan, Jasur" required></div>
         <div><label for="phone">Telefon raqamingiz</label><input id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+998 90 123 45 67" required></div>
-        <label class="chk"><input type="checkbox" id="video-ok" checked> <span>Videodarslik yuborilsin: platformadan 10 daqiqada foydalanishni o'rgatadi</span></label>
         <p id="formErr" class="fine hide" style="color:var(--negative)" role="alert">Ism va to'g'ri telefon raqamini kiriting.</p>
         <button class="pill dark" type="submit" id="sendBtn">Bepul sinashni boshlash</button>
       </form>
       <div id="thanks" class="stack hide" style="gap:16px">
         <div class="eyebrow">Rahmat</div>
         <h2 style="font-size:40px">Tayyor, kirishingiz mumkin</h2>
-        <p class="muted">Quyidagi tugma orqali platformaga o'ting va 7 kunlik bepul davrni boshlang.</p>
+        <p class="muted" id="thanksText">Quyidagi tugma orqali platformaga o'ting va 7 kunlik bepul davrni boshlang.</p>
         <a class="pill dark" id="ctaApp" href="https://app.morefin.uz/" rel="noopener">Morefin'ga kirish</a>
       </div>
     </div>
@@ -134,8 +133,17 @@ $('leadForm').addEventListener('submit', function(ev){
   if (!name || phone.replace(/\D/g,'').length < 9) { $('formErr').classList.remove('hide'); return; }
   $('formErr').classList.add('hide'); $('sendBtn').disabled = true;
   if (window.fbq) { try { fbq('track', 'Lead', { content_name: 'taklif' }); } catch(e){} }
-  var payload = { source: 'taklif', name: name, phone: phone, wantsVideo: $('video-ok').checked, utm: location.search.replace(/^\?/, '') };
-  var done = function(){ $('leadForm').classList.add('hide'); $('thanks').classList.remove('hide'); };
+  var leadId = Math.random().toString(36).slice(2, 8).padEnd(6, '0');
+  var payload = { id: leadId, source: 'taklif', name: name, phone: phone, utm: location.search.replace(/^\?/, '') };
+  var done = function(){
+    $('leadForm').classList.add('hide'); $('thanks').classList.remove('hide');
+    if (C.botUsername) {
+      var bot = 'https://t.me/' + C.botUsername.replace(/^@/, '') + '?start=t_' + leadId;
+      $('ctaApp').href = bot; $('ctaApp').textContent = 'Telegramda videoni olish';
+      $('thanksText').textContent = 'Telegram botga o\'ting: qisqa video darslikni yuboramiz va platformaga kirish havolasini beramiz.';
+      setTimeout(function(){ location.href = bot; }, 1200);
+    }
+  };
   try { fetch('/api/lead', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) }).then(done, done); } catch(e){ done(); }
 });
 })();

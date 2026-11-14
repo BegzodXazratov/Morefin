@@ -119,6 +119,7 @@
         <h2 style="font-size:42px;max-width:680px" id="rCtaTitle">Bularning hammasini bitta platforma yopadi</h2>
         <p style="max-width:640px;color:oklch(98% .02 240/.92)">Morefin sotuv, chiqim, qarz, jamoa va rejani bog'lab beradi. Telegram yoki Google orqali kirasiz va <span id="trial">7</span> kun bepul sinab ko'rasiz.</p>
         <div style="display:flex;flex-wrap:wrap;gap:12px">
+          <a class="pill dark hide" id="ctaBot" href="#" rel="noopener">Videoni Telegramda oling</a>
           <a class="pill dark" id="ctaApp" href="https://app.morefin.uz/" rel="noopener">7 kun bepul sinab ko'ring</a>
           <a class="pill light hide" id="ctaTg" href="#" rel="noopener">Savol bering</a>
         </div>
@@ -220,6 +221,7 @@ function showResult(name){
   $('trial').textContent = C.trialDays || 7;
   $('ctaApp').href = C.appUrl || 'https://app.morefin.uz/';
   $('ctaApp').addEventListener('click', function(){ track('trackCustom', 'TrialClick'); });
+  if (C.botUsername) { var cb = $('ctaBot'); cb.href = 'https://t.me/' + C.botUsername.replace(/^@/, '') + '?start=b' + window.__score + '_' + window.__leadId; cb.classList.remove('hide'); $('ctaApp').className = 'pill light'; cb.addEventListener('click', function(){ track('trackCustom', 'BotClick'); }); }
   if (C.telegramUrl) { $('ctaTg').href = C.telegramUrl; $('ctaTg').classList.remove('hide'); }
   show('result');
 }
@@ -233,7 +235,8 @@ $('leadForm').addEventListener('submit', function(ev){
   res = compute();
   $('sendBtn').disabled = true;
   track('track', 'Lead', { content_name: 'baholash', value: res.total });
-  var payload = { source: 'baholash', name: name, phone: phone, score: res.total, level: res.level,
+  var leadId = Math.random().toString(36).slice(2, 8).padEnd(6, '0'); window.__leadId = leadId; window.__score = res.total;
+  var payload = { id: leadId, source: 'baholash', name: name, phone: phone, score: res.total, level: res.level,
     weak: res.weak.map(function(k){ return CATS[k].name; }).join(', '), utm: utm() };
   var done = function(){ showResult(name); };
   try {
