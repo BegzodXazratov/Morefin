@@ -47,7 +47,7 @@ async function capi(eventName, o) {
   } catch (e) { console.log('capi istisno'); }
 }
 
-const publicUrl = () => process.env.PUBLIC_URL || 'https://morefin-bot.vercel.app';
+const publicUrl = () => process.env.PUBLIC_URL || ('https://' + (process.env.VERCEL_PROJECT_PRODUCTION_URL || 'morefin.vercel.app'));
 const sign = (tgId) => crypto.createHmac('sha256', process.env.WEBHOOK_SECRET || '').update(String(tgId)).digest('hex').slice(0, 16);
 const goLink = (tgId) => publicUrl() + '/api/go?u=' + tgId + '&s=' + sign(tgId);
 

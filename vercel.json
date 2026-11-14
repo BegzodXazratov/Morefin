@@ -1,0 +1,10 @@
+{
+  "cleanUrls": true,
+  "redirects": [
+    { "source": "/baholash", "destination": "/baholash/", "permanent": false },
+    { "source": "/taklif", "destination": "/taklif/", "permanent": false }
+  ],
+  "rewrites": [
+    { "source": "/admin", "destination": "/admin/index.html" }
+  ]
+}

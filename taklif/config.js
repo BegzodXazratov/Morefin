@@ -5,6 +5,6 @@ window.MOREFIN_CONFIG = {
   telegramUrl: "",
   botUsername: "", // Telegram bot username, @siz, masalan "morefin_bot"                   // masalan https://t.me/username (ixtiyoriy)
   site: "taklif",
-  trackUrl: "https://morefin-bot.vercel.app/api/track",
+  trackUrl: "/api/track",
   trialDays: 7
 };
