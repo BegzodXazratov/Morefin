@@ -4,5 +4,7 @@ window.MOREFIN_CONFIG = {
   appUrl: "https://app.morefin.uz/", // 7 kunlik sinovga o'tish havolasi
   telegramUrl: "",
   botUsername: "", // Telegram bot username, @siz, masalan "morefin_bot"                   // masalan https://t.me/username (ixtiyoriy)
+  site: "taklif",
+  trackUrl: "https://morefin-bot.vercel.app/api/track",
   trialDays: 7
 };
